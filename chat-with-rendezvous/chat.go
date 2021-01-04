@@ -14,14 +14,14 @@ import (
 	"github.com/libp2p/go-libp2p-core/protocol"
 	"github.com/libp2p/go-libp2p-discovery"
 
+	"github.com/ipfs/go-log"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	multiaddr "github.com/multiformats/go-multiaddr"
-	logging "github.com/whyrusleeping/go-logging"
-
-	"github.com/ipfs/go-log"
 )
 
 var logger = log.Logger("rendezvous")
+
+//rws
 
 func handleStream(stream network.Stream) {
 	logger.Info("Got a new stream!")
@@ -80,7 +80,7 @@ func writeData(rw *bufio.ReadWriter) {
 }
 
 func main() {
-	log.SetAllLoggers(logging.WARNING)
+	//log.SetAllLoggers(LogLevel.LevelWarn)
 	log.SetLogLevel("rendezvous", "info")
 	help := flag.Bool("h", false, "Display Help")
 	config, err := ParseFlags()
@@ -138,7 +138,7 @@ func main() {
 		go func() {
 			defer wg.Done()
 			if err := host.Connect(ctx, *peerinfo); err != nil {
-				logger.Warning(err)
+				logger.Warn(err)
 			} else {
 				logger.Info("Connection established with bootstrap node:", *peerinfo)
 			}
@@ -174,10 +174,7 @@ func main() {
 			logger.Warning("Connection failed:", err)
 			continue
 		} else {
-			rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-
-			go writeData(rw)
-			go readData(rw)
+			handleStream(stream)
 		}
 
 		logger.Info("Connected to:", peer)
